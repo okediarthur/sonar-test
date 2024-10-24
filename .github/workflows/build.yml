@@ -21,3 +21,4 @@ jobs:
                 SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
                 #Github test
                 sonar_test: "Fatal"
+                #This is a simple verification
