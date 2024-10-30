@@ -1,0 +1,81 @@
+name: DevSecOps Pipeline
+
+on:
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v1.6 # Use a specific version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Check SonarCloud Quality Gate
+        uses: sonarsource/sonarcloud-quality-gate-action@v1.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  snyk:
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Run Snyk to Check for Vulnerabilities
+        uses: snyk/actions/node@v1.4.1 # Specify a fixed version
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+
+      - name: Snyk Test for SCA (Dependencies)
+        run: snyk test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  zap_scan:
+    runs-on: ubuntu-latest
+    needs: snyk
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.6.1
+        with:
+          docker_name: 'owasp/zap2docker-stable'
+          target: 'http://your-application-url.com' # Replace with your application URL
+          rules_file_name: '.zap/rules.tsv' # Replace with the path to your rules file
+          cmd_options: '-a'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    runs-on: ubuntu-latest
+    needs: zap_scan
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'python', 'java' ] # Add languages relevant to your project
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
