@@ -14,10 +14,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 11 # If Java is required for SonarQube scanning
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
+      # - name: Set up JDK 11 # If Java is required for SonarQube scanning
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     java-version: '11'
 
       - name: Cache Sonar dependenciess
         uses: actions/cache@v3
