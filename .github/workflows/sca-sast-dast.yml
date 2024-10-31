@@ -38,7 +38,7 @@ jobs:
           echo "List contents after unzip"
           ls -la 
 
-          sudo mv sonar-scanner-cli-6.2.1.4610-linux-x64 /opt/sonar-scanner
+          sudo mv sonar-scanner-6.2.1.4610-linux-x64 /opt/sonar-scanner
           sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
       # Step 2: Set up Flutter environment
