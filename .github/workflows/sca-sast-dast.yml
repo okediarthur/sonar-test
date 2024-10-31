@@ -66,7 +66,7 @@ jobs:
               # Step 4: Install dependencies (Flutter packages)
       - name: Run tests
         run: flutter test --machine --coverage > tests.output 
-        
+      - run: mv analysis_options.yaml analysis_options.bak
       - name: Run SonarQube Scan
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
